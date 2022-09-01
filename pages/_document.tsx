@@ -1,26 +1,30 @@
 import * as React from "react";
-import Document, { Html, Head, Main, NextScript } from "next/document";
+import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
 import createEmotionCache from "../utils/createEmotionCache";
+import { AppType } from 'next/dist/shared/lib/utils';
+import { AppPropsWithEmotionCache } from './_app';
 
-export default class MyDocument extends Document {
-  render() {
-    return (
-      <Html lang="en">
-        <Head>
-          {/* Inject MUI styles first to match with the prepend: true configuration. */}
-          {this.props.emotionStyleTags}
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+type DocumentPropsWithEmotionStyleTags = Document & {
+  emotionStyleTags: any;
 }
 
-MyDocument.getInitialProps = async (ctx) => {
+const MyDocument = (props: DocumentPropsWithEmotionStyleTags) => {
+  return (
+    <Html lang="en">
+      <Head>
+        {/* Inject MUI styles first to match with the prepend: true configuration. */}
+        {props.emotionStyleTags}
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}
+
+MyDocument.getInitialProps = async (ctx: DocumentContext) => {
   const originalRenderPage = ctx.renderPage;
 
   const cache = createEmotionCache();
@@ -28,8 +32,8 @@ MyDocument.getInitialProps = async (ctx) => {
 
   ctx.renderPage = () =>
     originalRenderPage({
-      enhanceApp: (App) =>
-        function EnhanceApp(props) {
+      enhanceApp: (App: AppType) =>
+        function EnhanceApp(props: AppPropsWithEmotionCache) {
           return <App emotionCache={cache} {...props} />;
         },
     });
@@ -50,3 +54,5 @@ MyDocument.getInitialProps = async (ctx) => {
     emotionStyleTags,
   };
 };
+
+export default MyDocument;
